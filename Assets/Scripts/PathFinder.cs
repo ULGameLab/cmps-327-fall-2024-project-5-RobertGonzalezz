@@ -58,7 +58,7 @@ public class PathFinder
             // You just need to fill code inside this foreach only
             foreach (Tile nextTile in current.tile.Adjacents)
             {
-                
+                nextTile.weight=Math.Sqrt(Math.Pow((start.indexX - nextTile.indexX),2)+ Math.Pow((start.indexY - nextTile.indexY),2));
             }
         }
         return new Queue<Tile>(); // Returns an empty Path if no path is found
