@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using MapGen;
+using Unity.IO.LowLevel.Unsafe;
 
 public class Node
 {
@@ -56,11 +57,28 @@ public class PathFinder
 
             // for each neighboring tile calculate the costs
             // You just need to fill code inside this foreach only
-            foreach (Tile nextTile in current.tile.Adjacents)
+           foreach (Tile nextTile in current.tile.Adjacents)
             {
-                
-                //fnextTile.weight=Math.Sqrt(Math.Pow((start.indexX - nextTile.indexX),2)+ Math.Pow((start.indexY - nextTile.indexY),2));
+                if (DoneList.Exists(node => node.tile == nextTile)) continue;
+                double newCostSoFar = current.costSoFar + 10;
+                Node existingNode = TODOList.Find(node => node.tile == nextTile);
+                if (existingNode == null || newCostSoFar < existingNode.costSoFar)
+                {
+                    double hCost = HeuristicsDistance(nextTile, goalTile);
+                    double priority = newCostSoFar + hCost;
+                    Node nextNode = new Node(nextTile, priority, current, newCostSoFar);
+                    if (existingNode == null)
+                        TODOList.Add(nextNode);
+                    else
+                    {
+                        existingNode.priority = priority;
+                        existingNode.cameFrom = current;
+                        existingNode.costSoFar = newCostSoFar;
+                    }
+                }
             }
+
+
         }
         return new Queue<Tile>(); // Returns an empty Path if no path is found
     }
