@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 // FSM States for the enemy
@@ -131,12 +132,153 @@ public class Enemy : MonoBehaviour
     // TODO: Enemy chases the player when it is nearby
     private void HandleEnemyBehavior2()
     {
+        switch(state){
+            case EnemyState.DEFAULT:
+                material.color = Color.blue;
+        
+                if (path.Count <= 0) path = pathFinder.RandomPath(currentTile, 20);
+
+                if (path.Count > 0)
+                {
+                    targetTile = path.Dequeue();
+                    state = EnemyState.MOVING;
+                }
+                break;
+            case EnemyState.MOVING:
+                float distanceToPlayer = Vector3.Distance(playerGameObject.transform.position, currentTile.transform.position);
+                if (distanceToPlayer < visionDistance){
+                    state = EnemyState.CHASE;
+                    break;
+                }
+                //move
+                velocity = targetTile.gameObject.transform.position - transform.position;
+                transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+                
+                //if target reached
+                if (Vector3.Distance(transform.position, targetTile.gameObject.transform.position) <= 0.05f)
+                {
+                    currentTile = targetTile;
+                    state = EnemyState.DEFAULT;
+                }
+
+                break;
+            case EnemyState.CHASE:
+            // The path is not being updated fast enough but it is pathing to the tile that the game object walked before being updated again and recalculations  
+                Debug.Log("It is being chased");
+                material.color = Color.red;
+                Tile ptile = playerGameObject.GetComponent<Player>().currentTile;
+                if (path.Count <= 0 || targetTile != ptile){
+                    targetTile = ptile;
+            
+                    path = pathFinder.FindPathAStar(currentTile, targetTile);
+                }
+
+                if (path.Count > 0)
+                {
+                    targetTile = path.Dequeue();
+                    state = EnemyState.MOVING;
+                }
+                else
+                {
+                    state = EnemyState.DEFAULT;
+                }
+               
+                break;
+            default:
+                material.color = Color.blue;
+                state = EnemyState.DEFAULT;
+                break;
+
+        }
         
     }
 
-    // TODO: Third behavior (Describe what it does)
+    // TODO: Third behavior So its like the algoritm above but with an offset pursuit
     private void HandleEnemyBehavior3()
     {
+        switch(state){
+            case EnemyState.DEFAULT:
+                material.color = Color.green;
+        
+                if (path.Count <= 0) path = pathFinder.RandomPath(currentTile, 20);
 
+                if (path.Count > 0)
+                {
+                    targetTile = path.Dequeue();
+                    state = EnemyState.MOVING;
+                }
+                break;
+            case EnemyState.MOVING:
+                float distanceToPlayer = Vector3.Distance(playerGameObject.transform.position, currentTile.transform.position);
+                if (distanceToPlayer < visionDistance){
+                    state = EnemyState.CHASE;
+                    break;
+                }
+                //move
+                velocity = targetTile.gameObject.transform.position - transform.position;
+                transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+                
+                //if target reached
+                if (Vector3.Distance(transform.position, targetTile.gameObject.transform.position) <= 0.05f)
+                {
+                    currentTile = targetTile;
+                    state = EnemyState.DEFAULT;
+                }
+
+                break;
+            case EnemyState.CHASE:
+                Debug.Log("It is being chased");
+                material.color = Color.red;
+                Tile ptile = playerGameObject.GetComponent<Player>().currentTile;
+                Tile offsetTile = GetOffsetTile(ptile, 2);
+                if (path.Count <= 0 || targetTile != offsetTile){
+                    targetTile = offsetTile;
+            
+                    path = pathFinder.FindPathAStar(currentTile, targetTile);
+                }
+
+                if (path.Count > 0)
+                {
+                    targetTile = path.Dequeue();
+                    state = EnemyState.MOVING;
+                }
+                else
+                {
+                    state = EnemyState.DEFAULT;
+                }
+               
+                break;
+
+            default:
+                material.color = Color.blue;
+                state = EnemyState.DEFAULT;
+                break;
+        }
+
+        
+
+    }
+    private Tile GetOffsetTile(Tile playerTile, int offset)
+    {
+    foreach (Tile nextTile in playerTile.Adjacents)
+    {
+        Tile current = nextTile;
+        bool pathIsClear = true;
+        for (int i = 1; i < offset; i++)
+        {
+            if (!current.isPassable || current.Adjacents.Count == 0)
+            {
+                pathIsClear = false;
+                break;
+            }
+            current = current.Adjacents[0]; 
+        }
+        if (pathIsClear && current.isPassable)
+        {
+            return current;
+        }
+    }
+    return playerTile;
+    
     }
 }
