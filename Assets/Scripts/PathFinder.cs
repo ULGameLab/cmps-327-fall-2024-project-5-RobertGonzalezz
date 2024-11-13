@@ -60,20 +60,23 @@ public class PathFinder
            foreach (Tile nextTile in current.tile.Adjacents)
             {
                 if (DoneList.Exists(node => node.tile == nextTile)) continue;
-                double newCostSoFar = current.costSoFar + 10;
+                double nc = current.costSoFar + 10;
                 Node existingNode = TODOList.Find(node => node.tile == nextTile);
-                if (existingNode == null || newCostSoFar < existingNode.costSoFar)
+                if (existingNode == null || nc < existingNode.costSoFar)
                 {
-                    double hCost = HeuristicsDistance(nextTile, goalTile);
-                    double priority = newCostSoFar + hCost;
-                    Node nextNode = new Node(nextTile, priority, current, newCostSoFar);
+                    double h = HeuristicsDistance(nextTile, goalTile);
+                    double priority = nc + h;
+                    Node nextNode = new Node(nextTile, priority, current, nc);
+                    if (HeuristicsDistance(nextTile, goalTile) == 0|| h==0) { Debug.Log("Finish path sequence");
+                    //Debuged
+                    }
                     if (existingNode == null)
                         TODOList.Add(nextNode);
                     else
                     {
                         existingNode.priority = priority;
                         existingNode.cameFrom = current;
-                        existingNode.costSoFar = newCostSoFar;
+                        existingNode.costSoFar = nc;
                     }
                 }
             }

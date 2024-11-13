@@ -176,18 +176,23 @@ public class Enemy : MonoBehaviour
                 if (path.Count > 0)
                 {
                     targetTile = path.Dequeue();
-                    state = EnemyState.MOVING;
+                    velocity = targetTile.gameObject.transform.position - transform.position;
+                    transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+
+                    //if target reached
+                    if (Vector3.Distance(transform.position, targetTile.gameObject.transform.position) <= 0.05f)
+                    {
+                        currentTile = targetTile;
+                        state = EnemyState.DEFAULT;
+                    }
                 }
-                else
-                {
+                 break;
+
+                default:
+                    material.color = Color.blue;
                     state = EnemyState.DEFAULT;
-                }
-               
-                break;
-            default:
-                material.color = Color.blue;
-                state = EnemyState.DEFAULT;
-                break;
+                    break;
+                
 
         }
         
@@ -239,14 +244,16 @@ public class Enemy : MonoBehaviour
 
                 if (path.Count > 0)
                 {
-                    targetTile = path.Dequeue();
-                    state = EnemyState.MOVING;
+                    velocity = targetTile.gameObject.transform.position - transform.position;
+                    transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+
+                    //if target reached
+                    if (Vector3.Distance(transform.position, targetTile.gameObject.transform.position) <= 0.05f)
+                    {
+                        currentTile = targetTile;
+                        state = EnemyState.DEFAULT;
+                    }
                 }
-                else
-                {
-                    state = EnemyState.DEFAULT;
-                }
-               
                 break;
 
             default:
